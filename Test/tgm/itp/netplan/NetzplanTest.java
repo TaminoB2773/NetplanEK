@@ -16,40 +16,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Netzplan – Testplan")
 class NetzplanTest {
 
-    // =========================================================================
-    // Fixtures
-    // =========================================================================
-
-    // =========================================================================
-// Fixtures (Korrigierte Version gegen die NullPointerException)
-// =========================================================================
-
     /** Minimaler linearer Netzplan: A → B → C (Dauer je 5) */
     private Netzplan linearerNetzplan() {
         Knoten a = new Knoten(1, "A", 5);
         Knoten b = new Knoten(2, "B", 5);
         Knoten c = new Knoten(3, "C", 5);
 
-        // 1. Vorgänger wie gewohnt hinzufügen
         b.addPredecessor(new Knoten[]{a});
         c.addPredecessor(new Knoten[]{b});
-
-        // 2. WORKAROUND FÜR DIE NPE:
-        // Rufe getSuccessors() einmal auf, oder schaue, ob das JAR beim Hinzufügen
-        // zum Netzplan die Nachfolger generiert. Wir fügen sie dem Netzplan hinzu:
         Netzplan np = new Netzplan();
         np.addNode(a);
         np.addNode(b);
         np.addNode(c);
-
-        // Falls das JAR beim Berechnen abstürzt, müssen wir die Beziehungen
-        // im Netzplan spiegeln. Wir erzwingen die Initialisierung der Listen:
         try {
             a.getSuccessors();
             b.getSuccessors();
             c.getSuccessors();
         } catch (NullPointerException e) {
-            // Falls die getSuccessors() selbst null ist, fangen wir das ab
+
         }
 
         return np;
@@ -58,11 +42,6 @@ class NetzplanTest {
     private Netzplan netzplanMitEinemStartUndEnde() {
         return linearerNetzplan();
     }
-
-    // =========================================================================
-    // TC-SE – Start- und Endknoten-Validierung
-    // =========================================================================
-
     @Nested
     @DisplayName("TC-SE – Start- und Endknoten-Validierung")
     class StartEndValidierung {
@@ -173,13 +152,13 @@ class NetzplanTest {
         @DisplayName("TC-SE-09: Leerer Netzplan → Exception oder definiertes Verhalten")
         void leererNetzplan_definierteAntwort() {
             Netzplan np = new Netzplan();
-            // Entweder Exception oder getDuration() == 0 – beides ist akzeptabel
+
             try {
                 np.calcPath();
                 assertEquals(0L, np.getDuration(),
                         "Ein leerer Netzplan sollte Gesamtdauer 0 haben");
             } catch (IllegalArgumentException e) {
-                // auch akzeptabel
+
             }
         }
 
@@ -198,10 +177,6 @@ class NetzplanTest {
                     "Die Fehlermeldung sollte die Anzahl der Startknoten ('2') enthalten, war: " + ex.getMessage());
         }
     }
-
-    // =========================================================================
-    // TC-ORD – Reihenfolge der Knoteneingabe
-    // =========================================================================
 
     @Nested
     @DisplayName("TC-ORD – Einfluss der Knoteneingabe-Reihenfolge")
@@ -287,10 +262,6 @@ class NetzplanTest {
         }
     }
 
-    // =========================================================================
-    // TC-CYC – Zirkelbezug-Erkennung
-    // =========================================================================
-
     @Nested
     @DisplayName("TC-CYC – Zirkelbezug-Erkennung")
     class Zirkelbezug {
@@ -363,17 +334,9 @@ class NetzplanTest {
         }
     }
 
-    // =========================================================================
-    // TC-PRED – Mehrere Vorgänger
-    // =========================================================================
-
     @Nested
     @DisplayName("TC-PRED – Mehrere Vorgänger eines Knotens")
     class MehrereVorgaenger {
-
-        // =========================================================================
-// TC-PRED – Mehrere Vorgänger
-// =========================================================================
 
         @Test
         @DisplayName("TC-PRED-01: Knoten mit zwei Vorgängern ist zulässig")
@@ -383,10 +346,6 @@ class NetzplanTest {
             Knoten b = new Knoten(2, "B", 3);
             Knoten c = new Knoten(3, "C", 7);
 
-            // Gültige Kantenstruktur bauen:
-            // START -> A
-            // START -> B
-            // A und B -> C (C hat nun zwei Vorgänger, aber es gibt nur 1 globalen Startknoten!)
             a.addPredecessor(new Knoten[]{echterStart});
             b.addPredecessor(new Knoten[]{echterStart});
             c.addPredecessor(new Knoten[]{a, b});
@@ -421,7 +380,6 @@ class NetzplanTest {
 
             np.calcPath();
 
-            // FEZ(A)=10, FEZ(B)=3 → FAZ(C) muss das Maximum sein (= 10)
             assertEquals(10L, c.getFaz(),
                     "FAZ von C muss dem Maximum der FEZ aller Vorgänger entsprechen (10)");
         }
@@ -448,7 +406,6 @@ class NetzplanTest {
             np.addNode(d);
 
             np.calcPath();
-            // max(FEZ) = max(10,6,4) = 10; Dauer D=2 → Gesamtdauer = 12
             assertEquals(12L, np.getDuration(),
                     "Gesamtdauer muss 12 sein (längster Vorgänger A=10, + D=2)");
         }
@@ -463,10 +420,6 @@ class NetzplanTest {
                     "Die Vorgänger-Liste von B muss nach addPredecessor mindestens einen Eintrag enthalten");
         }
     }
-
-    // =========================================================================
-    // TC-SUCC – Mehrere Nachfolger
-    // =========================================================================
 
     @Nested
     @DisplayName("TC-SUCC – Mehrere Nachfolger eines Knotens")
